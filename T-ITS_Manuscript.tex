@@ -291,12 +291,11 @@ coordinate space.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{fig_architecture.png}
-\caption{PA-TSMixer architecture overview. Each ResBlock contains a multi-scale
-temporal mixing module with three parallel branches (fine/medium/coarse) operating
-at progressively downsampled resolutions, followed by standard channel mixing.
-$L$ ResBlocks are stacked with residual connections, and a linear projection maps
-the final representation to the prediction horizon.}
+\includegraphics[width=\columnwidth]{figures_pub/fig1_architecture.pdf}
+\caption{PA-TSMixer architecture. Each ResBlock contains a multi-scale temporal mixing
+module with three parallel branches (fine, medium, coarse) at progressively downsampled
+resolutions, followed by standard channel mixing. $L$ ResBlocks are stacked with residual
+connections, and a linear projection maps the final representation to the prediction horizon.}
 \label{fig:arch}
 \end{figure}
 
@@ -384,10 +383,11 @@ data-constrained scenarios.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{fig_analysis.png}
-\caption{Per-maneuver-type ADE comparison (left) and prediction horizon analysis
-(right). PA-TSMixer achieves the largest relative improvement on CTRV trajectories
-($-36.9\%$) and at short prediction horizons ($-34.8\%$ at 10 steps).}
+\includegraphics[width=\columnwidth]{figures_pub/fig3_analysis.pdf}
+\caption{(a) Per-maneuver-type ADE comparison. PA-TSMixer achieves the largest relative
+improvement on CTRV trajectories ($-36.9\%$). (b) ADE across prediction horizons.
+PA-TSMixer consistently outperforms TSMixer, with the largest advantage at short horizons
+($-34.8\%$ at 10 steps).}
 \label{fig:analysis}
 \end{figure}
 
@@ -456,11 +456,10 @@ Fig.~\ref{fig:trajectory} provides a qualitative comparison of predicted traject
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{fig_trajectory_ac.png}
-\caption{Trajectory prediction visualization on the Aircraft dataset.
-Gray: historical input trajectory. Blue: ground-truth future. Red dashed: PA-TSMixer
-prediction. The model accurately captures both straight-line CA motion and complex
-CTRV turning patterns.}
+\includegraphics[width=\columnwidth]{figures_pub/fig2_trajectory.pdf}
+\caption{Representative trajectory predictions on the Aircraft dataset.
+(a)--(e) Five test examples with increasing displacement magnitude.
+Gray: 12s history. Blue: 6s ground-truth future. Black dot: prediction start.}
 \label{fig:trajectory}
 \end{figure}
 
@@ -577,12 +576,9 @@ Prediction Horizon & TSMixer & PA-TSMixer & Improvement \\
 
 \subsection{Ablation Study}
 To isolate the contribution of each architectural component, we conduct ablation
-experiments evaluating: (1) the baseline TSMixer, (2) adding multi-scale temporal
-mixing (our primary contribution), (3) adding physics-grouped channel mixing with
-independent MLPs for position, velocity, and heading/altitude feature groups
-\cite{Satorras2021}, and (4) adding kinematic consistency loss that enforces
-relationships between position derivatives and velocity in normalized space.
-Table~\ref{tab:ablation} summarizes the results.
+experiments with consistent model capacity (Aircraft: $d_{\text{model}}\!=\!512$,
+$L\!=\!3$; TartanAviation: $d_{\text{model}}\!=\!256$, $L\!=\!1$).
+Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation}(a) summarize the results.
 
 \begin{table}[!t]
 \caption{Component ablation study with consistent model capacity. Aircraft:
@@ -622,6 +618,18 @@ $+$19\% on Aircraft, $+$34\% on TartanAviation). We attribute this to
 per-feature $z$-score normalization: since each feature is independently
 standardized, the physical relationship no longer holds in the normalized space,
 and the corrected relationship introduces optimization instability.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_pub/fig4_ablation.pdf}
+\caption{(a) Component ablation with consistent model capacity. Multi-scale
+temporal mixing provides a 24.4\% ADE reduction on Aircraft; on TartanAviation,
+all three configurations perform similarly, confirming that multi-scale acts
+primarily as a regularizer on small datasets. (b) Learned branch weights after
+softmax normalization. The coarse branch consistently receives the highest
+weight, increasing from 38.7\% in Layer~1 to 43.7\% in Layer~3.}
+\label{fig:ablation}
+\end{figure}
 
 \subsection{Noise Robustness}
 To evaluate practical utility under realistic sensor degradation, we test both
@@ -688,40 +696,15 @@ TimesNet                & 4,621,432 & 36.3 & 203.42 \\
 \end{tabular}
 \end{table}
 
-\subsection{Learned Scale Weights}
-Table~\ref{tab:scale} shows the learned branch weights (after softmax
-normalization) for each of the three ResBlocks in the PA-TSMixer model trained
-on Aircraft data. Two key patterns emerge from this analysis.
-
-First, the coarse branch consistently receives the highest weight across all
-layers (38.7\%--43.7\%), confirming that global trajectory shape---captured by
-the 4$\times$ downsampled representation---is the most informative temporal
-scale for prediction. This aligns with the physical intuition that aircraft
-trajectories are fundamentally smooth at the macroscopic level, governed by
-aerodynamic constraints that impose continuity on position and velocity.
-
-Second, the weight distribution shifts progressively toward coarser scales in
-deeper layers: from 38.7\% coarse weight in Layer 1 to 43.7\% in Layer 3.
-This monotonic trend suggests a hierarchical feature extraction process where
-earlier layers balance fine-grained maneuver details with coarse structural
-information, while deeper layers increasingly rely on abstract, global
-representations for the final prediction---reminiscent of the coarse-to-fine
-hierarchy observed in convolutional networks \cite{LeCun2015}.
-
-\begin{table}[!t]
-\caption{Learned multi-scale branch weights (softmax-normalized) for each ResBlock.
-Bold indicates the highest weight per layer.\label{tab:scale}}
+\begin{figure}[!t]
 \centering
-\begin{tabular}{lccc}
-\toprule
-Layer & Fine (60-step) & Medium (30-step) & Coarse (15-step) \\
-\midrule
-1 & 0.273 & 0.340 & \textbf{0.387} \\
-2 & 0.262 & 0.326 & \textbf{0.413} \\
-3 & 0.239 & 0.324 & \textbf{0.437} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=\columnwidth]{figures_pub/fig5_robustness.pdf}
+\caption{(a) Noise robustness: PA-TSMixer's relative advantage grows from
+$-15.2\%$ to $-26.9\%$ as GPS noise triples, due to implicit low-pass filtering
+in the pooled branches. (b) Computational efficiency: PA-TSMixer occupies the
+favorable lower-left region with low parameter count and fast inference.}
+\label{fig:robustness}
+\end{figure}
 
 
 \subsection{Limitations and Discussion}
