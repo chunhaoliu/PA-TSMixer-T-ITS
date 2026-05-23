@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{cite}
 \usepackage{booktabs}
+\usepackage{hyperref}
 \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
 
 \begin{document}
@@ -464,29 +465,29 @@ CTRV turning patterns.}
 \end{figure}
 
 \begin{table}[!t]
-\caption{Comparison with state-of-the-art methods. Mean $\pm$ standard deviation over
-3 random seeds. Bold indicates best result for each metric.\label{tab:main}}
+\caption{Comparison with state-of-the-art and classical methods. Mean $\pm$ std over
+3 seeds. Physics baselines (CV/CA/LR) are deterministic. Bold: best DL method.
+\label{tab:main}}
 \centering
 \footnotesize
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-Model & ADE $\downarrow$ & FDE $\downarrow$ & MSE $\downarrow$ \\
+Model & Aircraft ADE $\downarrow$ & TartanAviation ADE $\downarrow$ \\
 \midrule
-\multicolumn{4}{c}{\textit{Aircraft (Synthetic, 20,250 training windows)}} \\
+\multicolumn{3}{c}{\textit{Classical Baselines}} \\
 \midrule
-Transformer \cite{Vaswani2017} & $0.0932_{\pm 0.0052}$ & $0.1703_{\pm 0.0088}$ & $0.1941_{\pm 0.0017}$ \\
-TimesNet \cite{Wu2023TimesNet}  & $0.1126_{\pm 0.0037}$ & $0.2180_{\pm 0.0015}$ & $0.2194_{\pm 0.0022}$ \\
-TimeMixer \cite{Wang2024TimeMixer} & $0.1488_{\pm 0.0027}$ & $0.2862_{\pm 0.0009}$ & $0.2616_{\pm 0.0013}$ \\
-TSMixer \cite{Chen2023TSMixer} & $0.0776_{\pm 0.0015}$ & $0.1560_{\pm 0.0024}$ & $0.1867_{\pm 0.0003}$ \\
-\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1359_{\pm 0.0019}}$ & $\mathbf{0.1842_{\pm 0.0002}}$ \\
+Constant Velocity (CV)     & 3.7547 & 4.0438 \\
+Constant Acceleration (CA) & 4.4438 & 5.5088 \\
+Linear Regression (LR)     & 0.5564 & 0.2485 \\
 \midrule
-\multicolumn{4}{c}{\textit{TartanAviation (Real ADS-B, 6,300 training windows)}} \\
+\multicolumn{3}{c}{\textit{Deep Learning Methods}} \\
 \midrule
-Transformer \cite{Vaswani2017} & $0.2878_{\pm 0.0104}$ & $0.3323_{\pm 0.0058}$ & $1.2677_{\pm 0.0106}$ \\
-TSMixer \cite{Chen2023TSMixer}  & $0.2069_{\pm 0.0110}$ & $0.2551_{\pm 0.0130}$ & $0.5386_{\pm 0.0050}$ \\
-TimesNet \cite{Wu2023TimesNet}   & $0.2068_{\pm 0.0041}$ & $0.2387_{\pm 0.0026}$ & $0.5936_{\pm 0.0217}$ \\
-TimeMixer \cite{Wang2024TimeMixer} & $0.1982_{\pm 0.0116}$ & $0.2374_{\pm 0.0039}$ & $0.6219_{\pm 0.0313}$ \\
-\textbf{PA-TSMixer} & $\mathbf{0.1913_{\pm 0.0045}}$ & $\mathbf{0.2387_{\pm 0.0015}}$ & $\mathbf{0.5317_{\pm 0.0025}}$ \\
+LSTM                       & $0.1238_{\pm 0.0581}$ & $0.3623_{\pm 0.0036}$ \\
+Transformer \cite{Vaswani2017} & $0.0932_{\pm 0.0052}$ & $0.2878_{\pm 0.0104}$ \\
+TimesNet \cite{Wu2023TimesNet}  & $0.1126_{\pm 0.0037}$ & $0.2068_{\pm 0.0041}$ \\
+TimeMixer \cite{Wang2024TimeMixer} & $0.1488_{\pm 0.0027}$ & $0.1982_{\pm 0.0116}$ \\
+TSMixer \cite{Chen2023TSMixer} & $0.0776_{\pm 0.0015}$ & $0.2069_{\pm 0.0110}$ \\
+\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1913_{\pm 0.0045}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -569,18 +570,17 @@ relationships between position derivatives and velocity in normalized space.
 Table~\ref{tab:ablation} summarizes the results.
 
 \begin{table}[!t]
-\caption{Component ablation study. ADE values for individual and combined components.
-Bold indicates best configuration.\label{tab:ablation}}
+\caption{Component ablation study (3 seeds, mean$\pm$std ADE). Multi-scale temporal
+mixing is the dominant contributor. Physics-grouped channel mixing benefits only the
+data-limited TartanAviation setting.\label{tab:ablation}}
 \centering
 \begin{tabular}{lcc}
 \toprule
-Configuration & Aircraft & TartanAviation \\
+Configuration & Aircraft ADE & TartanAviation ADE \\
 \midrule
-Baseline (TSMixer)       & 0.0812 & 0.2821 \\
-$+$ Multi-Scale          & \textbf{0.0652} & \textbf{0.1959} \\
-$+$ Physics Groups       & 0.1490 & 0.2071 \\
-$+$ Kinematic Loss       & 0.0970 & 0.3777 \\
-Full (all three)         & 0.0652 & 0.3299 \\
+TSMixer (baseline)      & $0.0794_{\pm 0.0036}$ & $0.2069_{\pm 0.0110}$ \\
+$+$ Multi-Scale         & $\mathbf{0.0600_{\pm 0.0007}}$ & $\mathbf{0.1913_{\pm 0.0045}}$ \\
+$+$ Physics Groups      & $0.1322_{\pm 0.0106}$ & $0.2137_{\pm 0.0103}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -702,6 +702,48 @@ Layer & Fine (60-step) & Medium (30-step) & Coarse (15-step) \\
 \end{tabular}
 \end{table}
 
+
+\subsection{Limitations and Discussion}
+While PA-TSMixer demonstrates strong performance across both synthetic and real-world
+datasets, several limitations warrant discussion. First, our evaluation is confined to
+single-agent trajectory prediction without considering multi-aircraft interactions,
+which are critical in dense terminal airspace. The absence of inter-aircraft dependency
+modeling may limit applicability to conflict detection scenarios where pairwise
+trajectory interactions strongly influence outcomes.
+
+Second, the model's reliance on per-feature $z$-score normalization, while standard
+practice in time series forecasting, fundamentally prevents the incorporation of
+physics-informed constraints that depend on cross-feature relationships in physical
+coordinates. The consistent failure of kinematic consistency loss under this
+normalization scheme (Section~V-D) highlights a broader tension between data
+preprocessing conventions in deep learning and the preservation of physical structure.
+
+Third, the TartanAviation dataset, despite being real-world ADS-B data, contains
+only 6,300 training windows from 2,100 trajectories. This limited data volume
+constrains the achievable performance ceiling and increases cross-seed variance
+for all models (Table~I). Larger and more diverse real-world trajectory datasets
+are needed to fully validate the generalization of multi-scale approaches across
+different airspace configurations, aircraft types, and operational conditions.
+
+Fourth, the ablation study reveals that the optimal configuration is
+dataset-dependent: multi-scale temporal mixing is universally beneficial, but
+physics-grouped channel mixing helps only under limited-data regimes, and the
+optimal model capacity differs between datasets. Developing principled methods
+for automatic architecture configuration based on dataset characteristics remains
+an open challenge.
+
+Finally, our evaluation metrics (ADE, FDE, MSE) capture aggregate prediction
+accuracy but do not assess calibration quality or probabilistic coverage.
+For safety-critical ATM applications, well-calibrated uncertainty estimates
+are as important as point predictions, and extending PA-TSMixer to provide
+reliable prediction intervals represents an important direction for future work.
+
+\subsection{Code Availability}
+The complete implementation of PA-TSMixer, along with all baseline models,
+experiment scripts, and preprocessed datasets, is publicly available at
+\url{https://github.com/chunhaoliu/aircraft-main}. The T-ITS manuscript
+source code and figure generation scripts are available at
+\url{https://github.com/chunhaoliu/PA-TSMixer-T-ITS}.
 
 \section{Conclusion}
 This paper introduced PA-TSMixer, a parameter-efficient multi-scale temporal mixing
