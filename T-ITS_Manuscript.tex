@@ -20,6 +20,7 @@
 
 \author{Chunhao Liu,~\IEEEmembership{Graduate Student Member,~IEEE,}
         Panlong Wu,~Xingxiu Li,~Shan He,~and~Guangyuan Pan,~\IEEEmembership{Member,~IEEE}
+\thanks{This work was supported by the National Natural Science Foundation of China under Grant xxxxxx. (Corresponding author: Panlong Wu, e-mail: plwu@njust.edu.cn)}
 \thanks{Chunhao Liu, Panlong Wu, and Shan He are with the School of Automation,
 Nanjing University of Science and Technology, Nanjing 210094, China.
 (e-mail: chunhao.liu@njust.edu.cn; plwu@njust.edu.cn; heshan@njust.edu.cn)}
@@ -27,8 +28,8 @@ Nanjing University of Science and Technology, Nanjing 210094, China.
 Nanjing University of Science and Technology, Nanjing 210094, China.
 (e-mail: xingxiuli@njust.edu.cn)}
 \thanks{Guangyuan Pan is with the Department of Automation and Electrical Engineering,
-Linyi University, Linyi 276000, China. (e-mail: panguangyuan@lyu.edu.cn)}
-\thanks{Manuscript received xxx xx, 2026; revised xxx xx, 2026.}}
+Linyi University, Linyi 276000, China. (e-mail: panguangyuan@lyu.edu.cn)}}
+% Manuscript received xxx xx, 2026; revised xxx xx, 2026.
 
 \markboth{IEEE Transactions on Intelligent Transportation Systems}%
 {Liu \MakeLowercase{\textit{et al.}}: PA-TSMixer for Aircraft Trajectory Prediction}
@@ -793,6 +794,34 @@ performance in data-scarce operational settings.
 \section*{Acknowledgment}
 The authors would like to thank the editors and anonymous reviewers for their
 constructive comments and suggestions that improved the quality of this paper.
+
+\section*{Data Availability Statement}
+The TartanAviation ADS-B trajectory dataset used in this study is publicly
+available from the TartanAviation repository. The synthetic Aircraft dataset
+is generated using the open-source BlueSky ATC simulator, with the generation
+code included in our GitHub repository at
+\url{https://github.com/chunhaoliu/aircraft-main}.
+
+\section*{Code Availability Statement}
+The complete implementation of PA-TSMixer, including all baseline models,
+experiment scripts, trained model checkpoints, and evaluation code, is publicly
+available at \url{https://github.com/chunhaoliu/aircraft-main}. The LaTeX source
+code for this manuscript is available at
+\url{https://github.com/chunhaoliu/PA-TSMixer-T-ITS}.
+
+\section*{Conflict of Interest Statement}
+The authors declare that they have no known competing financial interests or
+personal relationships that could have appeared to influence the work reported
+in this paper.
+
+\section*{Author Contributions}
+\textbf{Chunhao Liu:} Conceptualization, Methodology, Software, Validation,
+Formal analysis, Investigation, Data curation, Writing -- original draft,
+Visualization. \textbf{Panlong Wu:} Conceptualization, Resources, Writing --
+review \& editing, Supervision, Project administration, Funding acquisition.
+\textbf{Xingxiu Li:} Methodology, Writing -- review \& editing.
+\textbf{Shan He:} Formal analysis, Writing -- review \& editing.
+\textbf{Guangyuan Pan:} Methodology, Writing -- review \& editing, Supervision.
 
 \begin{thebibliography}{99}
 \bibliographystyle{IEEEtran}
