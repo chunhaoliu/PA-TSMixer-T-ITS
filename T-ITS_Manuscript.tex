@@ -61,6 +61,7 @@ Per-maneuver analysis reveals particular effectiveness on constant turn rate
 trajectories, achieving a 36.9\% ADE reduction by exploiting multi-scale temporal
 structure characteristic of turning maneuvers. The model's computational efficiency---16$\times$
 fewer parameters than Transformer-based alternatives---makes it suitable for real-time ATM.
+tSource code is available at \url{https://github.com/chunhaoliu/aircraft-main}.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -397,33 +398,42 @@ PA-TSMixer consistently outperforms TSMixer, with the largest advantage at short
 
 \subsection{Experimental Setup}
 
-\subsubsection{Datasets}
+\subsubsection{Data Description}
 We evaluate PA-TSMixer on two complementary aircraft trajectory datasets:
 
-\textbf{Aircraft (Synthetic):} A dataset of 3,000 trajectories of length 120 steps
-(0.2-second interval) generated using the BlueSky air traffic simulator
-\cite{Hoekstra2016}. Three aircraft types are represented in equal proportion:
-constant acceleration (CA), constant turn rate and velocity (CTRV), and fighter
-aircraft with aggressive maneuvering. The dataset is randomly split into training
-(75\%), validation (10\%), and test (15\%) sets, yielding approximately 20,250
-sliding windows for training. Sensor noise is modeled as additive Gaussian noise
-with standard deviation proportional to 0.1--0.15 times the spatial extent \cite{Sun2020}.
+\textbf{Aircraft (Synthetic):} A dataset of 3,000 trajectories generated using the
+open-source BlueSky air traffic simulator \cite{Hoekstra2016}. Each trajectory spans
+120 time steps at 0.2-second intervals (24 seconds total). Three aircraft dynamics
+models are represented in equal proportion: constant acceleration (CA, 1,000
+trajectories), constant turn rate and velocity (CTRV, 1,000 trajectories), and fighter
+aircraft with aggressive maneuvering (1,000 trajectories). The CA model simulates
+straight-line acceleration with Gaussian position noise ($\sigma = 0.1$); the CTRV
+model produces coordinated turns with varying turn rates; and the fighter model
+introduces rapid heading and velocity changes. The spatial extent spans approximately
+4,000 $\times$ 4,000 meters. The dataset is randomly split into training (75\%, 2,250
+trajectories), validation (10\%, 300 trajectories), and test (15\%, 450 trajectories)
+sets. Using a sliding window of $T+H=90$ steps with stride $\lfloor T/4 \rfloor = 15$,
+this yields approximately 20,250 training windows, 2,700 validation windows, and
+4,050 test windows.
 
 \textbf{TartanAviation (Real ADS-B):} A real-world dataset of 3,000 Automatic
-Dependent Surveillance-Broadcast (ADS-B) trajectories collected from operational
-flights \cite{Arteaga2024}, each of length 120 steps at 0.2-second resolution.
-The dataset provides pre-computed training (2,100), validation (450), and test
-(450) splits, corresponding to approximately 6,300 training windows---roughly
-one-third the training data available in the synthetic dataset. ADS-B data
-exhibits realistic noise characteristics, intermittent position updates, and
-diverse operational patterns \cite{Sun2020,Georgiou2022}.
+Dependent Surveillance-Broadcast (ADS-B) trajectories from operational flights
+\cite{Arteaga2024}. Each trajectory contains 120 time steps at 0.2-second resolution.
+The dataset provides pre-computed splits: training (2,100 trajectories), validation
+(450), and test (450). With the same sliding window configuration, this yields
+approximately 6,300 training windows---roughly one-third the synthetic dataset size.
+ADS-B data exhibits realistic noise characteristics, intermittent position updates
+due to varying satellite coverage, and diverse operational patterns including climb,
+cruise, and descent phases \cite{Sun2020}. Position coordinates are reported in
+latitude/longitude (degrees) and are standardized per-feature using $z$-score
+normalization; consequently, all error metrics are reported in normalized space.
 
 Both datasets use a historical context of $T=60$ steps (12 seconds) and a default
-prediction horizon of $H=30$ steps (6 seconds), matching typical short-term
-conflict detection requirements in terminal maneuvering areas \cite{Schuster2024}.
-Features include position ($x$, $y$), velocity ($v_x$, $v_y$), heading, and
-altitude, standardized per-feature using $z$-score normalization computed on the
-training set.
+prediction horizon of $H=30$ steps (6 seconds), matching typical short-term conflict
+detection requirements in terminal maneuvering areas \cite{Schuster2024}.
+Features include position ($x$, $y$), velocity components ($v_x$, $v_y$), heading,
+and altitude, standardized per-feature using $z$-score normalization computed
+independently on each training set.
 
 \subsubsection{Baselines}
 We compare PA-TSMixer against four state-of-the-art time series forecasting
@@ -767,74 +777,29 @@ amplify overfitting when combined with excessive hidden dimensions.
 
 \section{Conclusion}
 This paper introduced PA-TSMixer, a parameter-efficient multi-scale temporal mixing
-architecture for aircraft trajectory prediction that addresses the fundamental
-limitation of single-scale processing in existing MLP-based time series models.
-Through three parallel temporal mixing branches operating at progressively coarser
-resolutions with proportional capacity reduction, PA-TSMixer captures trajectory
-patterns spanning rapid maneuvers to gross flight-path structure within a compact
-267K-parameter design.
-
-Comprehensive experiments on synthetic and real-world ADS-B datasets demonstrated
-consistent and statistically significant improvements over TSMixer and other
-state-of-the-art baselines, with ADE reductions of 19.6\% on synthetic data and
-7.6\% on real trajectories. Beyond aggregate accuracy, PA-TSMixer exhibited three
-practically valuable properties: (1) 59\% reduction in prediction variance on noisy
-real-world data, indicating enhanced reliability for safety-critical ATM applications;
-(2) growing relative advantage under increasing sensor noise, from 15.2\% to 26.9\%
-improvement as GPS noise tripled, demonstrating inherent robustness through
-implicit multi-scale denoising; and (3) particular effectiveness on turning
-maneuvers (36.9\% ADE reduction), where the multi-scale temporal structure is
-most pronounced. The learned branch weights confirmed that the model adaptively
-emphasizes coarse-scale representations, with deeper layers increasingly relying
-on global trajectory shape for final prediction. The model's computational
-efficiency---16$\times$ fewer parameters than Transformer-based alternatives---enables
-real-time deployment in operational ATM environments.
-
-Future work will explore several directions. First, extending the multi-scale
-design to handle multi-agent interactions through graph-based or attention-based
-inter-aircraft feature exchange \cite{Zhang2023GNN}, where interactions between
-aircraft at different spatial and temporal scales present a natural extension of
-our framework. Second, incorporating physics-informed constraints that operate
-in the original (pre-normalization) coordinate space \cite{Raissi2019PINN},
-potentially through a two-branch architecture that separately processes normalized
-features for learning and physical coordinates for constraint satisfaction.
-Third, investigating the application of PA-TSMixer to other transportation
-domains, such as vessel trajectory prediction using AIS data and autonomous
-vehicle motion forecasting, where multi-scale temporal patterns are similarly
-prevalent \cite{Alahi2016SocialLSTM}. Finally, exploring self-supervised
-pre-training strategies for trajectory data, following the success of masked
-autoencoding in general time series \cite{Nie2023PatchTST}, to improve
-performance in data-scarce operational settings.
+architecture for aircraft trajectory prediction. Through three parallel MLP branches
+at progressively coarser resolutions with proportional capacity reduction, the model
+captures trajectory patterns spanning rapid maneuvers to gross flight-path structure.
+Experiments on synthetic and real-world ADS-B datasets demonstrated a 19.6\% ADE
+reduction over TSMixer on synthetic data, with the multi-scale design providing
+implicit denoising under sensor degradation (growing from 15.2\% to 26.9\%
+improvement as GPS noise triples) and particular effectiveness on turning maneuvers
+(36.9\% ADE reduction). The model achieves this with 16$\times$ fewer parameters than
+Transformer-based alternatives, making it suitable for real-time ATM deployment.
+Future work includes extending the framework to multi-agent interactions,
+incorporating physics-informed constraints in physical coordinates, and applying
+the architecture to other transportation domains such as vessel and vehicle
+trajectory prediction.
 
 \section*{Acknowledgment}
 The authors would like to thank the editors and anonymous reviewers for their
-constructive comments and suggestions that improved the quality of this paper.
-
-\section*{Data Availability Statement}
-The TartanAviation ADS-B trajectory dataset used in this study is publicly
-available from the TartanAviation repository. The synthetic Aircraft dataset
-is generated using the open-source BlueSky ATC simulator, with the generation
-code included in our GitHub repository at
+constructive comments and suggestions. The source code is publicly available at
 \url{https://github.com/chunhaoliu/aircraft-main}.
 
-\section*{Code Availability Statement}
-The complete implementation of PA-TSMixer, including all baseline models,
-experiment scripts, trained model checkpoints, and evaluation code, is publicly
-available at \url{https://github.com/chunhaoliu/aircraft-main}. The LaTeX source
-code for this manuscript is available at
-\url{https://github.com/chunhaoliu/PA-TSMixer-T-ITS}.
-
-\section*{Conflict of Interest Statement}
-The authors declare that they have no known competing financial interests or
-personal relationships that could have appeared to influence the work reported
-in this paper.
-
-\section*{Author Contributions}
-\textbf{Chunhao Liu:} Methodology, Software, Writing -- original draft.
-\textbf{Panlong Wu:} Conceptualization, Supervision, Funding acquisition.
-\textbf{Xingxiu Li:} Formal analysis, Writing -- review \& editing.
-\textbf{Shan He:} Data curation, Visualization.
-\textbf{Guangyuan Pan:} Resources, Supervision, Funding acquisition.
+\textbf{Author Contributions:} C. Liu: Methodology, Software, Writing -- original
+draft; P. Wu: Conceptualization, Supervision, Funding acquisition; X. Li: Formal
+analysis, Writing -- review \& editing; S. He: Data curation, Visualization;
+G. Pan: Resources, Supervision, Funding acquisition.
 
 \begin{thebibliography}{99}
 \bibliographystyle{IEEEtran}
