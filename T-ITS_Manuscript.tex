@@ -388,11 +388,12 @@ data-constrained scenarios.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures_pub/fig3_analysis.pdf}
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig3a_maneuver.pdf}\label{fig:maneuver}}
+\hfil
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig3b_horizon.pdf}\label{fig:horizon}}
 \caption{(a) Per-maneuver-type ADE comparison. PA-TSMixer achieves the largest relative
 improvement on CTRV trajectories ($-36.9\%$). (b) ADE across prediction horizons.
-PA-TSMixer consistently outperforms TSMixer, with the largest advantage at short horizons
-($-34.8\%$ at 10 steps).}
+PA-TSMixer consistently outperforms TSMixer.}
 \label{fig:analysis}
 \end{figure}
 
@@ -468,42 +469,54 @@ Table~\ref{tab:main} presents the comprehensive comparison. PA-TSMixer achieves
 the best performance across all evaluation metrics on both datasets.
 Fig.~\ref{fig:trajectory} provides a qualitative comparison of predicted trajectories.
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures_pub/fig2_trajectory.pdf}
-\caption{Representative trajectory predictions on the Aircraft dataset.
-(a)--(e) Five test examples with increasing displacement magnitude.
-Gray: 12s history. Blue: 6s ground-truth future. Black dot: prediction start.}
+\subfloat[]{\includegraphics[width=0.32\textwidth]{figures_pub/fig2_traj_0.pdf}\label{fig:traj_a}}
+\hfil
+\subfloat[]{\includegraphics[width=0.32\textwidth]{figures_pub/fig2_traj_1.pdf}\label{fig:traj_b}}
+\hfil
+\subfloat[]{\includegraphics[width=0.32\textwidth]{figures_pub/fig2_traj_2.pdf}\label{fig:traj_c}}
+\hfil
+\subfloat[]{\includegraphics[width=0.32\textwidth]{figures_pub/fig2_traj_3.pdf}\label{fig:traj_d}}
+\hfil
+\subfloat[]{\includegraphics[width=0.32\textwidth]{figures_pub/fig2_traj_4.pdf}\label{fig:traj_e}}
+\caption{Representative trajectory examples on the Aircraft test set.
+(a)--(e) Five examples with increasing displacement magnitude. Left panel:
+X-position over time. Right panel: XY trajectory. Gray: 12s history.
+Blue: 6s ground-truth future. Black dot: prediction start point.}
 \label{fig:trajectory}
-\end{figure}
+\end{figure*}
 
 \begin{table}[!t]
-\caption{Comparison with state-of-the-art and classical methods. Mean $\pm$ std over
-3 seeds. Physics baselines (CV/CA/LR) are deterministic. Bold: best DL method.
-For TartanAviation, we report TSMixer at both its originally optimized capacity
-($d_{\text{model}}\!=\!512$) and the improved lower-capacity variant
-($d_{\text{model}}\!=\!256$) discovered in our analysis.\label{tab:main}}
+\caption{Performance comparison on Aircraft and TartanAviation datasets. ADE
+reported as mean$\pm$std over 3 seeds; FDE and MSE are mean values. Physics
+baselines (CV/CA/LR) are deterministic. Bold indicates best among DL methods.
+For TartanAviation, we additionally report the TSMixer variant at reduced
+capacity ($d_{\text{model}}\!=\!256$) which we found to outperform the
+originally optimized $d_{\text{model}}\!=\!512$ configuration.\label{tab:main}}
 \centering
 \footnotesize
-\begin{tabular}{lcc}
+\begin{tabular}{lcccccc}
 \toprule
-Model & Aircraft ADE $\downarrow$ & TartanAviation ADE $\downarrow$ \\
+& \multicolumn{3}{c}{Aircraft} & \multicolumn{3}{c}{TartanAviation} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+Model & ADE & FDE & MSE & ADE & FDE & MSE \\
 \midrule
-\multicolumn{3}{c}{\textit{Classical Baselines}} \\
+\multicolumn{7}{c}{\textit{Classical Baselines}} \\
 \midrule
-Constant Velocity (CV)     & 3.7547 & 4.0438 \\
-Constant Acceleration (CA) & 4.4438 & 5.5088 \\
-Linear Regression (LR)     & 0.5564 & 0.2485 \\
+CV            & 3.7547 & -- & -- & 4.0438 & -- & -- \\
+CA            & 4.4438 & -- & -- & 5.5088 & -- & -- \\
+LR            & 0.5564 & -- & -- & 0.2485 & -- & -- \\
 \midrule
-\multicolumn{3}{c}{\textit{Deep Learning Methods}} \\
+\multicolumn{7}{c}{\textit{Deep Learning Methods}} \\
 \midrule
-LSTM                       & $0.1238_{\pm 0.0581}$ & $0.3623_{\pm 0.0036}$ \\
-Transformer \cite{Vaswani2017} & $0.0932_{\pm 0.0052}$ & $0.2878_{\pm 0.0104}$ \\
-TimesNet \cite{Wu2023TimesNet}  & $0.1126_{\pm 0.0037}$ & $0.2068_{\pm 0.0041}$ \\
-TimeMixer \cite{Wang2024TimeMixer} & $0.1488_{\pm 0.0027}$ & $0.1982_{\pm 0.0116}$ \\
-TSMixer \cite{Chen2023TSMixer} & $0.0776_{\pm 0.0015}$ & $0.2069_{\pm 0.0110}$ \\
-TSMixer ($d_{\text{model}}\!=\!256$) & -- & $0.1926_{\pm 0.0056}$ \\
-\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1913_{\pm 0.0045}}$ \\
+LSTM          & $0.1238_{\pm 0.0581}$ & 0.3432 & 0.3052 & $0.3623_{\pm 0.0036}$ & 0.3802 & 1.3292 \\
+Transformer   & $0.0932_{\pm 0.0052}$ & 0.1703 & 0.1941 & $0.2878_{\pm 0.0104}$ & 0.3323 & 1.2677 \\
+TimesNet      & $0.1126_{\pm 0.0037}$ & 0.2180 & 0.2194 & $0.2068_{\pm 0.0041}$ & 0.2387 & 0.5936 \\
+TimeMixer     & $0.1488_{\pm 0.0027}$ & 0.2862 & 0.2616 & $0.1982_{\pm 0.0116}$ & 0.2374 & 0.6219 \\
+TSMixer       & $0.0776_{\pm 0.0015}$ & 0.1560 & 0.1867 & $0.2069_{\pm 0.0110}$ & 0.2551 & 0.5386 \\
+TSMixer (d256)& -- & -- & -- & $0.1926_{\pm 0.0056}$ & 0.2430 & 0.5350 \\
+\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & 0.1359 & 0.1842 & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 & 0.5317 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -635,13 +648,13 @@ and the corrected relationship introduces optimization instability.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures_pub/fig4_ablation.pdf}
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig4a_ablation.pdf}\label{fig:ablation_bar}}
+\hfil
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig4b_weights.pdf}\label{fig:weights}}
 \caption{(a) Component ablation with consistent model capacity. Multi-scale
-temporal mixing provides a 24.4\% ADE reduction on Aircraft; on TartanAviation,
-all three configurations perform similarly, confirming that multi-scale acts
-primarily as a regularizer on small datasets. (b) Learned branch weights after
-softmax normalization. The coarse branch consistently receives the highest
-weight, increasing from 38.7\% in Layer~1 to 43.7\% in Layer~3.}
+temporal mixing provides a 24\% ADE reduction on Aircraft. (b) Learned branch
+weights after softmax normalization, showing progressive shift toward coarser
+scales in deeper layers.}
 \label{fig:ablation}
 \end{figure}
 
@@ -712,11 +725,12 @@ TimesNet                & 4,621,432 & 36.3 & 203.42 \\
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures_pub/fig5_robustness.pdf}
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig5a_noise.pdf}\label{fig:noise}}
+\hfil
+\subfloat[]{\includegraphics[width=\columnwidth]{figures_pub/fig5b_efficiency.pdf}\label{fig:efficiency}}
 \caption{(a) Noise robustness: PA-TSMixer's relative advantage grows from
-$-15.2\%$ to $-26.9\%$ as GPS noise triples, due to implicit low-pass filtering
-in the pooled branches. (b) Computational efficiency: PA-TSMixer occupies the
-favorable lower-left region with low parameter count and fast inference.}
+$-15.2\%$ to $-26.9\%$ as GPS noise triples. (b) Computational efficiency:
+PA-TSMixer occupies the favorable lower-left region.}
 \label{fig:robustness}
 \end{figure}
 
