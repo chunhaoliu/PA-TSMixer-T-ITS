@@ -489,34 +489,29 @@ Blue: 6s ground-truth future. Black dot: prediction start point.}
 
 \begin{table}[!t]
 \caption{Performance comparison on Aircraft and TartanAviation datasets. ADE
-reported as mean$\pm$std over 3 seeds; FDE and MSE are mean values. Physics
-baselines (CV/CA/LR) are deterministic. Bold indicates best among DL methods.
-For TartanAviation, we additionally report the TSMixer variant at reduced
-capacity ($d_{\text{model}}\!=\!256$) which we found to outperform the
-originally optimized $d_{\text{model}}\!=\!512$ configuration.\label{tab:main}}
+reported as mean$\pm$std over 3 seeds. Bold indicates best among DL methods.
+Physics baselines (CV/CA/LR) are deterministic.\label{tab:main}}
 \centering
 \footnotesize
-\begin{tabular}{lcccccc}
+\begin{tabular}{lcc}
 \toprule
-& \multicolumn{3}{c}{Aircraft} & \multicolumn{3}{c}{TartanAviation} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
-Model & ADE & FDE & MSE & ADE & FDE & MSE \\
+Model & Aircraft ADE & TartanAviation ADE \\
 \midrule
-\multicolumn{7}{c}{\textit{Classical Baselines}} \\
+\multicolumn{3}{c}{\textit{Classical Baselines}} \\
 \midrule
-CV            & 3.7547 & -- & -- & 4.0438 & -- & -- \\
-CA            & 4.4438 & -- & -- & 5.5088 & -- & -- \\
-LR            & 0.5564 & -- & -- & 0.2485 & -- & -- \\
+Constant Velocity (CV)     & 3.7547 & 4.0438 \\
+Constant Acceleration (CA) & 4.4438 & 5.5088 \\
+Linear Regression (LR)     & 0.5564 & 0.2485 \\
 \midrule
-\multicolumn{7}{c}{\textit{Deep Learning Methods}} \\
+\multicolumn{3}{c}{\textit{Deep Learning Methods}} \\
 \midrule
-LSTM          & $0.1238_{\pm 0.0581}$ & 0.3432 & 0.3052 & $0.3623_{\pm 0.0036}$ & 0.3802 & 1.3292 \\
-Transformer   & $0.0932_{\pm 0.0052}$ & 0.1703 & 0.1941 & $0.2878_{\pm 0.0104}$ & 0.3323 & 1.2677 \\
-TimesNet      & $0.1126_{\pm 0.0037}$ & 0.2180 & 0.2194 & $0.2068_{\pm 0.0041}$ & 0.2387 & 0.5936 \\
-TimeMixer     & $0.1488_{\pm 0.0027}$ & 0.2862 & 0.2616 & $0.1982_{\pm 0.0116}$ & 0.2374 & 0.6219 \\
-TSMixer       & $0.0776_{\pm 0.0015}$ & 0.1560 & 0.1867 & $0.2069_{\pm 0.0110}$ & 0.2551 & 0.5386 \\
-TSMixer (d256)& -- & -- & -- & $0.1926_{\pm 0.0056}$ & 0.2430 & 0.5350 \\
-\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & 0.1359 & 0.1842 & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 & 0.5317 \\
+LSTM                       & $0.1238_{\pm 0.0581}$ & $0.3623_{\pm 0.0036}$ \\
+Transformer \cite{Vaswani2017} & $0.0932_{\pm 0.0052}$ & $0.2878_{\pm 0.0104}$ \\
+TimesNet \cite{Wu2023TimesNet}  & $0.1126_{\pm 0.0037}$ & $0.2068_{\pm 0.0041}$ \\
+TimeMixer \cite{Wang2024TimeMixer} & $0.1488_{\pm 0.0027}$ & $0.1982_{\pm 0.0116}$ \\
+TSMixer \cite{Chen2023TSMixer} & $0.0776_{\pm 0.0015}$ & $0.2069_{\pm 0.0110}$ \\
+TSMixer ($d_{\text{model}}\!=\!256$) & -- & $0.1926_{\pm 0.0056}$ \\
+\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1913_{\pm 0.0045}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
