@@ -136,6 +136,16 @@ temporal resolution, reducing the multi-scale parameter overhead by approximatel
 56\% compared to uniform-capacity designs. This parameter-efficient approach is
 particularly beneficial for real-world trajectory prediction, where training data
 from operational ADS-B recordings is inherently limited \cite{Sun2020}.
+Fig.~\ref{fig:arch} provides an overview of the proposed architecture.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_pub/fig1_architecture.pdf}
+\caption{PA-TSMixer architecture. Each ResBlock contains a multi-scale temporal
+mixing module with three parallel branches (fine, medium, coarse) operating at
+progressively downsampled resolutions, followed by standard channel mixing.}
+\label{fig:arch}
+\end{figure}
 
 The contributions of this work are summarized as follows:
 \begin{enumerate}
@@ -293,16 +303,6 @@ coordinate space.
 
 
 \section{PA-TSMixer Architecture}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures_pub/fig1_architecture.pdf}
-\caption{PA-TSMixer architecture. Each ResBlock contains a multi-scale temporal mixing
-module with three parallel branches (fine, medium, coarse) at progressively downsampled
-resolutions, followed by standard channel mixing. $L$ ResBlocks are stacked with residual
-connections, and a linear projection maps the final representation to the prediction horizon.}
-\label{fig:arch}
-\end{figure}
 
 \subsection{Overall Architecture}
 PA-TSMixer consists of $L$ stacked ResBlocks, each performing temporal mixing followed
