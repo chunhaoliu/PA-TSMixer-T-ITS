@@ -114,6 +114,17 @@ rapid control inputs produce fine-grained state changes within 1--2 seconds, whi
 responses unfold over 5--10 seconds, and gross trajectory shapes are determined by flight
 phase transitions spanning 15--30 seconds or more.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_pub/fig0_teaser.pdf}
+\caption{Multi-scale temporal patterns in aircraft trajectories. Left: standard
+single-scale processing treats all 60 steps uniformly, obscuring patterns at
+different time scales. Right: our multi-scale approach decomposes the trajectory
+into fine (maneuver details), medium (turn patterns), and coarse (flight path)
+branches, each processed with proportionally scaled capacity.}
+\label{fig:teaser}
+\end{figure}
+
 Multi-scale temporal modeling has emerged as a key direction in recent time series
 forecasting research. Architectures such as TimesNet \cite{Wu2023TimesNet} transform
 1D time series into 2D tensors to capture intra- and inter-period variations via 2D
@@ -136,16 +147,6 @@ temporal resolution, reducing the multi-scale parameter overhead by approximatel
 56\% compared to uniform-capacity designs. This parameter-efficient approach is
 particularly beneficial for real-world trajectory prediction, where training data
 from operational ADS-B recordings is inherently limited \cite{Sun2020}.
-Fig.~\ref{fig:arch} provides an overview of the proposed architecture.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures_pub/fig1_architecture.pdf}
-\caption{PA-TSMixer architecture. Each ResBlock contains a multi-scale temporal
-mixing module with three parallel branches (fine, medium, coarse) operating at
-progressively downsampled resolutions, followed by standard channel mixing.}
-\label{fig:arch}
-\end{figure}
 
 The contributions of this work are summarized as follows:
 \begin{enumerate}
@@ -303,6 +304,15 @@ coordinate space.
 
 
 \section{PA-TSMixer Architecture}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_pub/fig1_architecture.pdf}
+\caption{PA-TSMixer architecture. Each ResBlock contains a multi-scale temporal
+mixing module with three parallel branches (fine, medium, coarse) operating at
+progressively downsampled resolutions, followed by standard channel mixing.}
+\label{fig:arch}
+\end{figure}
 
 \subsection{Overall Architecture}
 PA-TSMixer consists of $L$ stacked ResBlocks, each performing temporal mixing followed
