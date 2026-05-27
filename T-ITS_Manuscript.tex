@@ -116,17 +116,6 @@ rapid control inputs produce fine-grained state changes within 1--2 seconds, whi
 responses unfold over 5--10 seconds, and gross trajectory shapes are determined by flight
 phase transitions spanning 15--30 seconds or more.
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures_pub/fig0_teaser.pdf}
-\caption{Multi-scale temporal patterns and PA-TSMixer concept.
-Top: aircraft trajectories exhibit patterns at fine (1--2\,s maneuvers), medium
-(5--10\,s turns), and coarse (15--30\,s flight phases) scales.
-Bottom: three parallel branches process each scale with proportionally reduced
-capacity ($d \rightarrow d/2 \rightarrow d/4$), fused via learned weights.}
-\label{fig:teaser}
-\end{figure}
-
 Multi-scale temporal modeling has emerged as a key direction in recent time series
 forecasting research. Architectures such as TimesNet \cite{Wu2023TimesNet} transform
 1D time series into 2D tensors to capture intra- and inter-period variations via 2D
