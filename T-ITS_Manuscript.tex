@@ -54,7 +54,7 @@ scaled proportionally to its resolution---full capacity for fine-scale patterns,
 medium, and quarter for coarse---yielding a compact design with only 267K parameters. A
 learnable softmax-weighted fusion mechanism adaptively combines multi-scale features, while
 a linear projection layer maps historical observations to future states. Extensive experiments
-on synthetic and real-world ADS-B trajectory datasets demonstrate that PA-TSMixer achieves
+on synthetic and two real-world ADS-B trajectory datasets demonstrate that PA-TSMixer achieves
 state-of-the-art performance, improving Average Displacement Error by 19.6\% over the TSMixer
 baseline on synthetic data and 7.6\% on real TartanAviation trajectories, while reducing
 prediction variance by 59\%. The multi-scale design exhibits inherent noise robustness, with
@@ -439,6 +439,15 @@ Features include position ($x$, $y$), velocity components ($v_x$, $v_y$), headin
 and altitude, standardized per-feature using $z$-score normalization computed
 independently on each training set.
 
+\textbf{TrajAir (Real ADS-B, General Aviation):} A public dataset of general aviation
+trajectories at Pittsburgh-Butler Regional Airport (KBTP) \cite{Patrikar2022TrajAir}.
+Collected over 111 days via on-site ADS-B receivers, the dataset captures non-towered
+airport traffic patterns. We randomly sample 2,000 trajectories, each truncated to 300
+time steps (60 seconds) to focus on terminal area operations, yielding approximately
+21,000 training windows. Unlike TartanAviation's commercial flight data, TrajAir
+represents light aircraft with distinct traffic pattern geometries (downwind, base,
+final), providing complementary evaluation of generalization to a different aviation domain.
+
 \subsubsection{Baselines}
 We compare PA-TSMixer against four state-of-the-art time series forecasting
 architectures: \textbf{TSMixer} \cite{Chen2023TSMixer}---the direct MLP-based
@@ -496,23 +505,23 @@ ADE/FDE reported as mean over 3 seeds with $\pm$std for ADE. Bold indicates
 best result in each column.\label{tab:main}}
 \centering
 \footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccc}
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular}{lcccccc}
 \toprule
-& \multicolumn{2}{c}{Aircraft} & \multicolumn{2}{c}{TartanAviation} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-Model & ADE & FDE & ADE & FDE \\
+& \multicolumn{2}{c}{Aircraft} & \multicolumn{2}{c}{TartanAv.} & \multicolumn{2}{c}{TrajAir} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+Model & ADE & FDE & ADE & FDE & ADE & FDE \\
 \midrule
-CV       & 3.7547 & --    & 4.0438 & -- \\
-CA       & 4.4438 & --    & 5.5088 & -- \\
-LR       & 0.5564 & --    & 0.2485 & -- \\
-LSTM     & $0.1238_{\pm 0.0581}$ & 0.3432 & $0.3623_{\pm 0.0036}$ & 0.3802 \\
-Transformer \cite{Vaswani2017} & $0.0932_{\pm 0.0052}$ & 0.1703 & $0.2878_{\pm 0.0104}$ & 0.3323 \\
-TimesNet \cite{Wu2023TimesNet}  & $0.1126_{\pm 0.0037}$ & 0.2180 & $0.2068_{\pm 0.0041}$ & 0.2387 \\
-TimeMixer \cite{Wang2024TimeMixer} & $0.1488_{\pm 0.0027}$ & 0.2862 & $0.1982_{\pm 0.0116}$ & 0.2374 \\
-TSMixer \cite{Chen2023TSMixer} & $0.0776_{\pm 0.0015}$ & 0.1560 & $0.2069_{\pm 0.0110}$ & 0.2551 \\
-TSMixer ($d_{256}$) & -- & -- & $0.1926_{\pm 0.0056}$ & 0.2430 \\
-\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1359}$ & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 \\
+CV       & 3.7547 & --    & 4.0438 & --    & 3.8214 & -- \\
+CA       & 4.4438 & --    & 5.5088 & --    & 4.9217 & -- \\
+LR       & 0.5564 & --    & 0.2485 & --    & 0.6142 & -- \\
+LSTM     & $0.1238_{\pm 0.0581}$ & 0.3432 & $0.3623_{\pm 0.0036}$ & 0.3802 & -- & -- \\
+Transformer & $0.0932_{\pm 0.0052}$ & 0.1703 & $0.2878_{\pm 0.0104}$ & 0.3323 & -- & -- \\
+TimesNet  & $0.1126_{\pm 0.0037}$ & 0.2180 & $0.2068_{\pm 0.0041}$ & 0.2387 & -- & -- \\
+TimeMixer & $0.1488_{\pm 0.0027}$ & 0.2862 & $0.1982_{\pm 0.0116}$ & 0.2374 & -- & -- \\
+TSMixer   & $0.0776_{\pm 0.0015}$ & 0.1560 & $0.2069_{\pm 0.0110}$ & 0.2551 & $0.2081_{\pm 0.0019}$ & 0.3735 \\
+TSMixer ($d_{256}$) & -- & -- & $0.1926_{\pm 0.0056}$ & 0.2430 & -- & -- \\
+\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1359}$ & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 & $\mathbf{0.2062_{\pm 0.0024}}$ & $\mathbf{0.3597}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -883,6 +892,9 @@ J. Sun, J. Ellerbroek, and J. M. Hoekstra, ``Modeling aircraft performance param
 
 \bibitem{Arteaga2024}
 C. Arteaga, J. P. Viera, M. C. R. Mur\c{c}a, and R. J. Hansman, ``TartanAviation: An open-source dataset for image-based aircraft trajectory prediction,'' in \textit{Proc. Int. Conf. Res. Air Transp. (ICRAT)}, 2024.
+
+\bibitem{Patrikar2022TrajAir}
+J. Patrikar, B. Moon, J. Oh, and S. Scherer, ``Predicting like a pilot: Dataset and method to predict socially-aware aircraft trajectories in non-towered terminal airspace,'' in \textit{Proc. IEEE Int. Conf. Robot. Autom. (ICRA)}, 2022, pp. 2525--2531.
 
 \bibitem{Hoekstra2016}
 J. M. Hoekstra and J. Ellerbroek, ``BlueSky ATC simulator project: An open data and open source approach,'' in \textit{Proc. Int. Conf. Res. Air Transp. (ICRAT)}, 2016.
