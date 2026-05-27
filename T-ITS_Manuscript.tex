@@ -750,41 +750,6 @@ PA-TSMixer occupies the favorable lower-left region.}
 \end{figure}
 
 
-\subsection{Generalization to Standard Time Series Benchmarks}
-To assess whether PA-TSMixer's multi-scale design provides universal benefits beyond
-trajectory data, we evaluate both models on two standard long-term time series
-forecasting benchmarks: ETTh1 (hourly electricity transformer temperature) and ETTm1
-(15-minute granularity). Following the standard protocol \cite{Chen2023TSMixer,
-Wu2023TimesNet}, we use an input length of 96 and a prediction length of 96,
-with $d_{\text{model}}\!=\!512$, $d_{\text{ff}}\!=\!2048$, $L\!=\!2$ layers, and
-dropout $0.1$.
-
-\begin{table}[!t]
-\caption{Generalization results on standard time series benchmarks (MSE, 3 seeds).\label{tab:ett}}
-\centering
-\begin{tabular}{lcc}
-\toprule
-Model & ETTh1 & ETTm1 \\
-\midrule
-TSMixer      & $0.4784_{\pm 0.0072}$ & $0.5163_{\pm 0.0429}$ \\
-PA-TSMixer   & $0.5364_{\pm 0.0432}$ & $0.5119_{\pm 0.0196}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-On ETTh1, PA-TSMixer underperforms TSMixer by 12.1\%, while on ETTm1 the two models
-are statistically indistinguishable ($p > 0.05$). These results confirm that
-PA-TSMixer's multi-scale temporal mixing is \emph{not} a universal performance
-enhancer; rather, it provides targeted benefits when the underlying data exhibits
-inherent multi-scale temporal structure. Aircraft trajectories, with their distinct
-fine-grained maneuvers, medium-scale turns, and coarse flight phases, represent
-precisely such a domain. In contrast, electricity transformer temperature data
-lacks comparable multi-scale dynamics, causing the additional branch capacity
-to contribute noise rather than signal. This finding reinforces our central claim:
-the multi-scale design is specifically motivated by and tailored to the structure
-of trajectory prediction, and its benefits do not trivially extend to arbitrary
-time series tasks.
-
 \subsection{Limitations and Discussion}
 While PA-TSMixer demonstrates strong performance across both synthetic and real-world
 datasets, several limitations warrant discussion. First, our evaluation is confined to
