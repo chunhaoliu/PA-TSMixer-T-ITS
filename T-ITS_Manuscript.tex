@@ -54,16 +54,19 @@ scaled proportionally to its resolution---full capacity for fine-scale patterns,
 medium, and quarter for coarse---yielding a compact design with only 267K parameters. A
 learnable softmax-weighted fusion mechanism adaptively combines multi-scale features, while
 a linear projection layer maps historical observations to future states. Extensive experiments
-on synthetic and two real-world ADS-B trajectory datasets demonstrate that PA-TSMixer achieves
-state-of-the-art performance, improving Average Displacement Error by 19.6\% over the TSMixer
-baseline on synthetic data and 7.6\% on real TartanAviation trajectories, while reducing
-prediction variance by 59\%. The multi-scale design exhibits inherent noise robustness, with
-relative improvement growing from 15.2\% to 26.9\% as sensor noise increases threefold.
+on a synthetic benchmark and the real-world TartanAviation ADS-B dataset show that
+PA-TSMixer improves Average Displacement Error by 19.6\% over the TSMixer baseline
+on synthetic data and 7.6\% on TartanAviation trajectories, while reducing prediction
+variance by 59\%. A supplementary clean-window evaluation on the TrajAir
+general-aviation dataset further reduces ADE and FDE by 10.8\% and 5.4\%,
+respectively, relative to a retuned TSMixer baseline. The multi-scale design
+exhibits inherent noise robustness, with relative improvement growing from
+15.2\% to 26.9\% as sensor noise increases threefold.
 Per-maneuver analysis reveals particular effectiveness on constant turn rate
 trajectories, achieving a 36.9\% ADE reduction by exploiting multi-scale temporal
 structure characteristic of turning maneuvers. The model's computational efficiency---16$\times$
 fewer parameters than Transformer-based alternatives---makes it suitable for real-time ATM.
-tSource code is available at \url{https://github.com/chunhaoliu/aircraft-main}.
+Source code is available at \url{https://github.com/chunhaoliu/aircraft-main}.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -146,10 +149,13 @@ captures aircraft trajectory patterns at fine, medium, and coarse temporal resol
 through three parallel MLP branches with progressive capacity reduction and learnable
 softmax-weighted fusion.
 \item We demonstrate through extensive experiments on both synthetic and real-world
-ADS-B trajectory datasets \cite{Arteaga2024} that PA-TSMixer achieves consistent and
-statistically significant improvements over TSMixer and other state-of-the-art baselines
-including Transformer \cite{Vaswani2017}, TimesNet \cite{Wu2023TimesNet}, and
-TimeMixer \cite{Wang2024TimeMixer}, with ADE reductions of 19.6\% and 7.6\%, respectively.
+ADS-B trajectory datasets \cite{Arteaga2024} that PA-TSMixer achieves statistically
+significant improvements over TSMixer and other state-of-the-art baselines on the
+two core benchmarks, with ADE reductions of 19.6\% and 7.6\%, respectively. A
+supplementary clean-window TrajAir study further demonstrates a 10.8\% ADE
+reduction and a 5.4\% FDE reduction relative to a retuned TSMixer baseline,
+while clarifying the distinction between trajectory-position metrics and
+full-state reconstruction metrics.
 \item We conduct comprehensive ablation studies revealing that multi-scale temporal
 mixing is the primary driver of performance gains, while physics-grouped channel mixing
 is effective only on limited-data regimes and kinematic consistency losses are rendered
@@ -447,11 +453,16 @@ time steps (60 seconds) to focus on terminal area operations, yielding approxima
 21,000 training windows. Unlike TartanAviation's commercial flight data, TrajAir
 represents light aircraft with distinct traffic pattern geometries (downwind, base,
 final), providing complementary evaluation of generalization to a different aviation domain.
+For TrajAir, zero-padded rows introduced by fixed-length caching are excluded before
+fitting the scaler and before constructing sliding windows. This clean-window protocol
+prevents artificial terminal padding from contributing to either normalization
+statistics or test windows.
 
 \subsubsection{Baselines}
-We compare PA-TSMixer against four state-of-the-art time series forecasting
+We compare PA-TSMixer against five state-of-the-art and representative sequence
 architectures: \textbf{TSMixer} \cite{Chen2023TSMixer}---the direct MLP-based
-baseline with alternating temporal and channel mixing; \textbf{Transformer}
+baseline with alternating temporal and channel mixing; \textbf{LSTM}---a recurrent
+sequence baseline; \textbf{Transformer}
 \cite{Vaswani2017}---the standard encoder-decoder Transformer with multi-head
 self-attention; \textbf{TimesNet} \cite{Wu2023TimesNet}---which transforms 1D
 temporal sequences into 2D tensors for convolution-based multi-periodicity
@@ -462,7 +473,7 @@ multi-scale mixing architecture with hierarchical feature aggregation.
 All models are implemented in PyTorch and trained using the AdamW optimizer
 \cite{Loshchilov2019AdamW} with a cosine annealing learning rate schedule
 \cite{Loshchilov2017SGDR} starting from $2 \times 10^{-3}$. Training uses
-batch sizes of 16 (Aircraft) or 64 (TartanAviation), with early stopping
+batch sizes of 16 (Aircraft) or 64 (TartanAviation and TrajAir), with early stopping
 (patience of 6 epochs) based on validation loss. Each configuration is evaluated
 over 3 random seeds (42, 123, 456), and results are reported as
 mean $\pm$ standard deviation. All experiments are conducted on a single
@@ -471,14 +482,21 @@ NVIDIA GeForce RTX 4090 GPU.
 PA-TSMixer configurations are dataset-specific to reflect the different training
 data volumes: $d_{\text{model}}=512$, $L=3$ layers, dropout $0.2$ for
 Aircraft; $d_{\text{model}}=256$, $L=1$ layer, dropout $0.15$ for TartanAviation.
-The reduced capacity for TartanAviation follows the principle of capacity scaling
-with data size, preventing overfitting on the limited 6,300 training windows
-\cite{Ying2019,Zhang2021Understanding}.
+For the supplementary TrajAir study, all neural baselines were refreshed with
+dataset-specific quick search and evaluated under the clean-window protocol. The
+selected PA-TSMixer configuration uses $d_{\text{model}}=128$, $L=2$, dropout
+$0.1$, and validation selection by trajectory ADE rather than full-state MSE.
+This setting reflects the general-aviation objective: accurate future position
+prediction is primary, while full-state reconstruction is reported as a secondary
+diagnostic.
 
 \subsection{Main Results}
 
-Table~\ref{tab:main} presents the comprehensive comparison. PA-TSMixer achieves
-the best performance across all evaluation metrics on both datasets.
+Table~\ref{tab:main} presents the comparison on the two core datasets together
+with a supplementary external-domain validation on TrajAir. PA-TSMixer achieves
+the strongest ADE on the two core datasets and remains competitive on FDE,
+while the clean-window TrajAir evaluation confirms its advantage on the primary
+trajectory-position metrics ADE and FDE.
 Fig.~\ref{fig:trajectory} provides a qualitative comparison of predicted trajectories.
 
 \begin{figure*}[!t]
@@ -500,31 +518,48 @@ Blue: 6s ground-truth future. Black dot: prediction start point.}
 \end{figure*}
 
 \begin{table}[!t]
-\caption{Performance comparison on Aircraft and TartanAviation datasets.
-ADE/FDE reported as mean over 3 seeds with $\pm$std for ADE. Bold indicates
-best result in each column.\label{tab:main}}
+\caption{Performance comparison on the two core datasets (Aircraft and
+TartanAviation) together with a supplementary external-domain evaluation on
+TrajAir. TrajAir neural baselines were refreshed with dataset-specific tuning
+and evaluated under the clean-window protocol that excludes zero-padded rows
+before normalization and window construction. ADE/FDE are reported as
+mean$\pm$std over 3 seeds where available. Bold indicates best result in each
+column.\label{tab:main}}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{1.8pt}
+\scriptsize
+\setlength{\tabcolsep}{1.4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
 & \multicolumn{2}{c}{Aircraft} & \multicolumn{2}{c}{TartanAv.} & \multicolumn{2}{c}{TrajAir} \\
 \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
 Model & ADE & FDE & ADE & FDE & ADE & FDE \\
 \midrule
-CV       & 3.7547 & --    & 4.0438 & --    & 3.8214 & -- \\
-CA       & 4.4438 & --    & 5.5088 & --    & 4.9217 & -- \\
-LR       & 0.5564 & --    & 0.2485 & --    & 0.6142 & -- \\
-LSTM     & $0.1238_{\pm 0.0581}$ & 0.3432 & $0.3623_{\pm 0.0036}$ & 0.3802 & -- & -- \\
-Transformer & $0.0932_{\pm 0.0052}$ & 0.1703 & $0.2878_{\pm 0.0104}$ & 0.3323 & -- & -- \\
-TimesNet  & $0.1126_{\pm 0.0037}$ & 0.2180 & $0.2068_{\pm 0.0041}$ & 0.2387 & -- & -- \\
-TimeMixer & $0.1488_{\pm 0.0027}$ & 0.2862 & $0.1982_{\pm 0.0116}$ & 0.2374 & -- & -- \\
-TSMixer   & $0.0776_{\pm 0.0015}$ & 0.1560 & $0.2069_{\pm 0.0110}$ & 0.2551 & $0.2081_{\pm 0.0019}$ & 0.3735 \\
+CV       & 3.7547 & --    & 4.0438 & --    & -- & -- \\
+CA       & 4.4438 & --    & 5.5088 & --    & -- & -- \\
+LR       & 0.5564 & --    & 0.2485 & --    & -- & -- \\
+LSTM     & $0.1238_{\pm 0.0581}$ & $0.1798_{\pm 0.0672}$ & $0.3623_{\pm 0.0036}$ & $0.3828_{\pm 0.0033}$ & $0.1103_{\pm 0.0009}$ & $0.1970_{\pm 0.0012}$ \\
+Transformer & $0.0932_{\pm 0.0052}$ & 0.1703 & $0.2878_{\pm 0.0104}$ & 0.3323 & $0.1179_{\pm 0.0012}$ & $0.1999_{\pm 0.0038}$ \\
+TimesNet  & $0.1126_{\pm 0.0037}$ & 0.2180 & $0.2068_{\pm 0.0041}$ & 0.2387 & $0.1544_{\pm 0.0108}$ & $0.2840_{\pm 0.0077}$ \\
+TimeMixer & $0.1488_{\pm 0.0027}$ & 0.2862 & $0.1982_{\pm 0.0116}$ & 0.2374 & $0.1963_{\pm 0.0013}$ & $0.3902_{\pm 0.0025}$ \\
+TSMixer   & $0.0776_{\pm 0.0015}$ & 0.1560 & $0.2069_{\pm 0.0110}$ & 0.2551 & $0.0989_{\pm 0.0014}$ & $0.2002_{\pm 0.0020}$ \\
 TSMixer ($d_{256}$) & -- & -- & $0.1926_{\pm 0.0056}$ & 0.2430 & -- & -- \\
-\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1359}$ & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 & $\mathbf{0.2062_{\pm 0.0024}}$ & $\mathbf{0.3597}$ \\
+\textbf{PA-TSMixer} & $\mathbf{0.0624_{\pm 0.0016}}$ & $\mathbf{0.1359}$ & $\mathbf{0.1913_{\pm 0.0045}}$ & 0.2387 & $\mathbf{0.0882_{\pm 0.0004}}$ & $\mathbf{0.1894_{\pm 0.0005}}$ \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_pub/fig_trajair_clean_benchmark.pdf}
+\caption{Clean-window TrajAir benchmark. PA-TSMixer achieves the lowest ADE and
+FDE under the trajectory-position evaluation protocol, reducing ADE by 10.8\%
+and FDE by 5.4\% relative to the retuned TSMixer baseline. MSE is reported as a
+secondary full-state metric; Transformer obtains the lowest all-channel MSE,
+which indicates that full-state reconstruction and future-position accuracy are
+not identical objectives on this dataset.\label{fig:trajair_clean}}
+\end{figure}
 
 The classical baselines (CV, CA, LR) perform substantially worse than all deep
 learning methods. The apparent weakness of CV and CA---both over 3.7 ADE versus
@@ -568,6 +603,19 @@ indicating more stable and reliable predictions on noisy real-world data. This
 robustness property is particularly valuable for operational ATM applications
 where consistent performance across varying conditions is essential.
 
+On TrajAir, the clean-window protocol changes the interpretation of the
+external-domain experiment. After excluding zero-padded rows before normalization
+and window generation, PA-TSMixer achieves the best trajectory-position accuracy,
+with ADE $0.0882 \pm 0.0004$ and FDE $0.1894 \pm 0.0005$. Relative to the
+retuned TSMixer baseline ($0.0989 \pm 0.0014$ ADE and $0.2002 \pm 0.0020$
+FDE), this corresponds to 10.8\% lower ADE and 5.4\% lower FDE. The improvement
+is modest but highly stable across seeds, suggesting that multi-scale temporal
+mixing transfers to general-aviation trajectories when evaluation is aligned
+with valid trajectory windows. At the same time, Transformer obtains the lowest
+all-channel MSE (0.4019 versus 0.4144 for PA-TSMixer). We therefore report MSE
+as a secondary full-state reconstruction diagnostic and treat ADE/FDE as the
+primary metrics for aircraft-position prediction.
+
 \subsection{Per-Maneuver-Type Analysis}
 Table~\ref{tab:maneuver} presents performance disaggregated by aircraft type.
 PA-TSMixer provides the largest relative improvement on CTRV trajectories
@@ -584,6 +632,8 @@ cannot fully anticipate rapid, discontinuous heading and velocity changes.
 \begin{table}[!t]
 \caption{Per-maneuver-type ADE comparison on the Aircraft dataset.\label{tab:maneuver}}
 \centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
 Maneuver Type & TSMixer & PA-TSMixer & Improvement \\
@@ -611,6 +661,8 @@ branch becoming increasingly important for longer predictions.
 \begin{table}[!t]
 \caption{ADE comparison across prediction horizons on Aircraft.\label{tab:predlen}}
 \centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
 Prediction Horizon & TSMixer & PA-TSMixer & Improvement \\
@@ -693,6 +745,8 @@ presents the results.
 \caption{Noise robustness under increasing GPS noise. ADE values on Aircraft
 (single seed).\label{tab:noise}}
 \centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
 Noise Multiplier & TSMixer ADE & PA-TSMixer ADE & Improvement \\
@@ -732,6 +786,8 @@ the architecture's scalability to resource-constrained edge deployment scenarios
 \caption{Computational efficiency comparison at batch size 64.
 FLOPs measured for a single forward pass.\label{tab:efficiency}}
 \centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lrrr}
 \toprule
 Model & Parameters & FLOPs (M) & Time (ms) \\
@@ -760,8 +816,8 @@ PA-TSMixer occupies the favorable lower-left region.}
 
 
 \subsection{Limitations and Discussion}
-While PA-TSMixer demonstrates strong performance across both synthetic and real-world
-datasets, several limitations warrant discussion. First, our evaluation is confined to
+While PA-TSMixer demonstrates strong performance on the two core benchmarks, several
+limitations warrant discussion. First, our evaluation is confined to
 single-agent trajectory prediction without considering multi-aircraft interactions,
 which are critical in dense terminal airspace \cite{Zhang2023GNN}.
 
@@ -775,12 +831,12 @@ Third, the TartanAviation dataset contains only 6,300 training windows from 2,10
 trajectories. This limited data volume constrains the achievable performance ceiling
 and increases cross-seed variance \cite{Ayala2023}.
 
-Fourth, the ablation study reveals that the optimal configuration is
-dataset-dependent: multi-scale temporal mixing is universally beneficial, but
-physics-grouped channel mixing helps only under limited-data regimes, and the
-optimal model capacity differs between datasets. Developing principled methods
-for automatic architecture configuration based on dataset characteristics remains
-an open challenge \cite{Chen2023TSMixer}.
+Fourth, the refreshed TrajAir evaluation shows that metric choice matters: PA-TSMixer
+is best on ADE/FDE, whereas Transformer obtains the lowest all-channel MSE. This
+divergence indicates that future-position accuracy and full-state reconstruction
+are related but non-identical objectives. Developing principled multi-objective
+selection criteria and automatic architecture configuration remains an open
+challenge \cite{Chen2023TSMixer}.
 
 \subsection{Hyperparameter Sensitivity}
 To assess the sensitivity of PA-TSMixer to its primary capacity parameter, we
@@ -819,10 +875,14 @@ architecture for aircraft trajectory prediction. Through three parallel MLP bran
 at progressively coarser resolutions with proportional capacity reduction, the model
 captures trajectory patterns spanning rapid maneuvers to gross flight-path structure.
 Experiments on synthetic and real-world ADS-B datasets demonstrated a 19.6\% ADE
-reduction over TSMixer on synthetic data, with the multi-scale design providing
-implicit denoising under sensor degradation (growing from 15.2\% to 26.9\%
-improvement as GPS noise triples) and particular effectiveness on turning maneuvers
-(36.9\% ADE reduction). The model achieves this with 16$\times$ fewer parameters than
+reduction over TSMixer on synthetic data and a 7.6\% reduction on TartanAviation,
+with the multi-scale design providing implicit denoising under sensor degradation
+(growing from 15.2\% to 26.9\% improvement as GPS noise triples) and particular
+effectiveness on turning maneuvers (36.9\% ADE reduction). A supplementary
+clean-window TrajAir study further demonstrated a 10.8\% ADE reduction and a
+5.4\% FDE reduction relative to retuned TSMixer on general-aviation trajectories,
+although Transformer retained the lowest secondary all-channel MSE. The model
+achieves its trajectory-position gains with 16$\times$ fewer parameters than
 Transformer-based alternatives, making it suitable for real-time ATM deployment.
 Future work includes extending the framework to multi-agent interactions,
 incorporating physics-informed constraints in physical coordinates, and applying
